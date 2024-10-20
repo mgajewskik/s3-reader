@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+
+BASE_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+function test {
+    go test -v -cover ./...
+}
+
+function cover {
+    TEMP="/tmp/go-cover.$$.tmp"
+    go test -coverprofile="$TEMP" ./... && go tool cover -html="$TEMP" && unlink "$TEMP"
+}
+
+function build {
+    env GOOS=linux GOARCH=amd64 go build -ldflags '-linkmode external -extldflags "-static"' -o infra/packer/s3-reader ./cmd/api/...
+    echo "Build complete"
+}
+
+function packer-init {
+    packer init infra/packer/s3-reader-ami.pkr.hcl
+}
+
+function packer-validate {
+    # build
+    packer validate infra/packer/s3-reader-ami.pkr.hcl
+}
+
+function packer-fmt {
+    packer fmt -check infra/packer/s3-reader-ami.pkr.hcl
+}
+
+function packer-build {
+    packer-fmt
+    packer-validate
+
+    packer build infra/packer/s3-reader-ami.pkr.hcl
+}
+
+function terraform-init {
+    cd infra/terraform
+    terraform init
+    cd "$BASE_DIR"
+}
+
+function terraform-validate {
+    cd infra/terraform
+    terraform validate
+    cd "$BASE_DIR"
+}
+
+function terraform-fmt {
+    cd infra/terraform
+    terraform fmt -check
+    cd "$BASE_DIR"
+}
+
+function terraform-plan {
+    cd infra/terraform
+    terraform plan
+    cd "$BASE_DIR"
+}
+
+function terraform-apply {
+    cd infra/terraform
+    terraform apply -auto-approve
+    cd "$BASE_DIR"
+}
+
+function terraform-destroy {
+    cd infra/terraform
+    terraform destroy -auto-approve
+    cd "$BASE_DIR"
+}
+
+function deploy {
+    packer-build
+    terraform-apply
+}
+
+function test-api {
+    cd infra/terraform
+    curl "$(terraform output -raw lb_dns_name)"
+    cd "$BASE_DIR"
+}
+
+function ci:go-build {
+    build
+}
+
+function ci:check-packer {
+    packer-init
+    packer-fmt
+    packer-validate
+}
+
+function ci:packer-build {
+    packer build \
+        -var="version=$1" \
+        infra/packer/s3-reader-ami.pkr.hcl
+}
+
+function ci:check-terraform {
+    terraform-init
+    terraform-fmt
+    terraform-validate
+}
+
+function ci:terraform-plan {
+    cd infra/terraform
+
+    terraform plan \
+        -var="service_version=$1"
+
+    cd "$BASE_DIR"
+}
+
+function ci:terraform-apply {
+    cd infra/terraform
+
+    terraform apply \
+        -var="service_version=$1" \
+        -auto-approve
+
+    cd "$BASE_DIR"
+}
+
+function ci:test-deployment {
+    test-api
+}
+
+function help {
+    printf "%s <task> [args]\n\nTasks:\n" "${0}"
+    compgen -A function | grep -v "^_" | cat -n
+    printf "\nExtended help:\n  Each task has comments for general usage\n"
+}
+
+TIMEFORMAT=$'\nTask completed in %3lR'
+time "${@:-help}"
