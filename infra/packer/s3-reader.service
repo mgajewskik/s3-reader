@@ -1,0 +1,15 @@
+[Unit]
+Description=S3 Reader
+After=network.target
+
+[Service]
+Type=simple
+User=s3-reader
+StartLimitInterval=120
+StartLimitBurst=10
+EnvironmentFile=/etc/s3-reader.env
+ExecStart=/bin/sh -c '/usr/local/bin/s3-reader >> /var/log/s3-reader.log 2>&1'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,55 @@
+{
+    "branches": [
+        "main"
+    ],
+    "repositoryUrl": "https://github.com/mgajewskik/s3-reader",
+    "debug": "true",
+    "preset": "conventionalcommits",
+    "plugins": [
+        [
+            "@semantic-release/commit-analyzer",
+            {
+                "releaseRules": [
+                    {
+                        "type": "feature",
+                        "release": "minor"
+                    }
+                ]
+            }
+        ],
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                "presetConfig": {
+                    "types": [
+                        {
+                            "type": "feature",
+                            "section": "Features"
+                        },
+                        {
+                            "type": "feat",
+                            "section": "Features"
+                        },
+                        {
+                            "type": "perf",
+                            "section": "Performance"
+                        },
+                        {
+                            "type": "fix",
+                            "section": "Bug Fixes"
+                        },
+                        {
+                            "type": "refactor",
+                            "section": "Refactor"
+                        },
+                        {
+                            "type": "docs",
+                            "section": "Documentation"
+                        }
+                    ]
+                }
+            }
+        ],
+        "@semantic-release/git"
+    ]
+}
