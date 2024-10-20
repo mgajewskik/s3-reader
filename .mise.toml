@@ -1,0 +1,4 @@
+[tools]
+go = "1.23.2"
+terraform = "1.9.8"
+packer = "1.11.2"
