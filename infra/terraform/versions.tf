@@ -8,6 +8,7 @@ terraform {
     }
   }
 
+  # NOTE: change this if deploying to your own AWS account
   backend "s3" {
     bucket = "terraform-state-220263133738"
     key    = "s3-reader/terraform.tfstate"

@@ -15,6 +15,7 @@ resource "aws_iam_role" "ec2" {
   })
 }
 
+# NOTE: could be customized to allow more granular permissions
 resource "aws_iam_role_policy_attachment" "s3_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
   role       = aws_iam_role.ec2.name

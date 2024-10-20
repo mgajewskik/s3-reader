@@ -47,6 +47,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+# TODO add HTTPS listener
 # resource "aws_lb_listener" "https" {
 #   load_balancer_arn = aws_lb.this.arn
 #   port              = "443"

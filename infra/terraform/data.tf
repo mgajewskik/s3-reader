@@ -1,5 +1,6 @@
 data "aws_caller_identity" "current" {}
 
+# NOTE: using default vpc to simplify setup and testing speed
 data "aws_vpc" "default" {
   default = true
 }
